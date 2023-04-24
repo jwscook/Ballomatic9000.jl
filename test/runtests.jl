@@ -48,6 +48,16 @@ end
     @test sqrt(28 / g) ≈ Ballomatic9000.timeofcollision(a, [0.0, 2g], d)
   end
 
+  @testset "Collide with eachother" begin
+    a = Ball([0.0, 0.0], [1.0, 0.0], 1.0, 1.0)
+    b = Ball([4.0, 0.0], [-1.0, 0.0], 1.0, 1.0)
+    # a starts a 0, b starts at 4, they move together at speed 1 each and collide
+    # when radii touch after travelling 1 space unit each in 1 time unit
+    #s = x + ut + 1/2 a t^2
+    @test 1 ≈ Ballomatic9000.timeofcollision(a, b, 0, 0)
+  end
+
+
 end
 
 end

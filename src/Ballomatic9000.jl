@@ -56,16 +56,6 @@ function collide!(a::Ball, b::Ball)
   return nothing
 end
 
-function distancetravelled(a::Ball, force, dt)
-  return norm(@. a.velocity * dt + (GRAVITY + force / a.mass) / 2 * dt^2)
-end
-
-function couldcollide(a::Ball, b::Ball, forcea, forceb, dt)
-  ra = distancetravelled(a, forcea, dt)
-  rb = distancetravelled(b, forceb, dt)
-  return sum(abs2, a.location - b.location) <= (ra + rb)^2
-end
-
 function solvequadratic(a, b, c)
   # ax^2 + bx + c = 0
   solutions = if iszero(a) 
@@ -85,40 +75,24 @@ end
 #  >>> expr = ((x1 - x2) + (v1 - v2)*t + (a1 - a2)*t**2 /2)**2 - (r1 + r2)**2
 #  >>> sympy.Poly(expr, t).all_coeffs()
 #  [a1**2/4 - a1*a2/2 + a2**2/4, a1*v1 - a1*v2 - a2*v1 + a2*v2, a1*x1 - a1*x2 - a2*x1 + a2*x2 + v1**2 - 2*v1*v2 + v2**2, 2*v1*x1 - 2*v1*x2 - 2*v2*x1 + 2*v2*x2, -r1**2 - 2*r1*r2 - r2**2 + x1**2 - 2*x1*x2 + x2**2]
-function timeofcollision(a::Ball, b::Ball, forcea, forceb, dt)
+function timeofcollision(a::Ball, b::Ball, forcea, forceb)
   x1, x2 = a.position, b.position
   v1, v2 = a.velocity, b.velocity
-  a1, a2 = GRAVITY + forcea / a.mass, GRAVITY + forceb / b.mass
+  a1, a2 = GRAVITY .+ forcea / a.mass, GRAVITY .+ forceb / b.mass
   r1, r2 = a.radius, b.radius
-
-  coeffs = [a1^2/4 - a1*a2/2 + a2^2/4,
-            a1*v1 - a1*v2 - a2*v1 + a2*v2,
-            a1*x1 - a1*x2 - a2*x1 + a2*x2 + v1^2 - 2*v1*v2 + v2^2,
-            2*v1*x1 - 2*v1*x2 - 2*v2*x1 + 2*v2*x2,
-            -r1^2 - 2*r1*r2 - r2^2 + x1^2 - 2*x1*x2 + x2^2]
-  potential_collisions = sort(real.(roots(coeffs)))
-  index_of_earliest_collision = findfirst(x->x > 0, potential_collisions)
-  if isnothing(index_of_earliest_collision)
+  coeffs = [dot(a1, a1)/4 - dot(a1, a2)/2 + dot(a2, a2)/4,
+            dot(a1, v1) - dot(a1, v2) - dot(a2, v1) + dot(a2, v2),
+            dot(a1, x1) - dot(a1, x2) - dot(a2, x1) + dot(a2, x2) + dot(v1, v1) - 2dot(v1, v2) + dot(v2, v2),
+            2dot(v1, x1) - 2dot(v1, x2) - 2dot(v2, x1) + 2dot(v2, x2),
+            -dot(r1, r1) - 2dot(r1, r2) - dot(r2, r2) + dot(x1, x1) - 2dot(x1, x2) + dot(x2, x2)]
+  @show times_of_potential_collisions = sort(real.(roots(coeffs)))
+  index_of_earliest_collision_time = findfirst(x->x > 0, times_of_potential_collisions)
+  if isnothing(index_of_earliest_collision_time)
     return Inf
   else
-    return potential_collisions[index_of_earliest_collision]
+    return times_of_potential_collisions[index_of_earliest_collision_time]
   end
 end
-# x1' = x1 + v1 * dt + a1 * dt^2 / 2
-# x2' = x2 + v2 * dt + a2 * dt^2 / 2
-# Δ = x1' - x2' = (x1 - x2) + (v1 - v2) * dt + f(1/m1-1/m2) * dt^2 / 2
-# if f = 0, intersection is easy
-# 0 = Δ = (x1 - x2) + (v1 - v2) * dt
-# dt = (x1 - x2) / (v2 - v1)
-# if f != 0
-# s = dot(x1 + v1 * dt + a1 * dt^2 / 2, x2 + v2 * dt + a2 * dt^2 / 2)
-# using Symbolics
-#
-# @symbols x1 x2 v1 v2 a1 a2 t
-# s1 = x1 + v1 * t + a1 * t^2 / 2
-# s2 = x2 + v2 * t + a2 * t^2 / 2
-# s² = (s1 - s2)^2 = s1^2 + s2^2 - 2*s1*s2 # 4th order in t
-# ∂s²/∂t = 0
 
 struct Domain
   xmax::Float64
