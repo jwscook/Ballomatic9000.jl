@@ -36,7 +36,24 @@ function touch(a::Ball, b::Ball, rtol=10eps())
                   (a.radius + b.radius)^2, atol=0, rtol=rtol)
 end
 
+"""
+    collide!(a::Ball,b::Ball)
+
+Collide two balls off one another in an elastic collision that
+alters their velocities. No temporal advance is taken.
+
 # See https://en.wikipedia.org/wiki/Elastic_collision
+
+...
+# Arguments
+- `a::Ball`: 
+- `b::Ball`: 
+...
+
+# Example
+```julia
+```
+"""
 function collide!(a::Ball, b::Ball)
   # this function has zero allocations
   x1, x2 = a.position, b.position
@@ -56,25 +73,30 @@ function collide!(a::Ball, b::Ball)
   return nothing
 end
 
-function solvequadratic(a, b, c)
-  # ax^2 + bx + c = 0
-  solutions = if iszero(a) 
-    (iszero(b) ? -Inf : -c / b) .* (1, 1)
-  else
-    sqrtarg = b^2 - 4a*c
-    if sqrtarg < 0
-      (-Inf, -Inf) # this is safe for the use case, but otherwise a silly thing to do
-    else
-      ((-b + sqrt(sqrtarg)) / 2a, (-b - sqrt(sqrtarg)) / 2a)
-    end
-  end
-  return solutions
-end
+
+"""
+    timeofcollision(a::Ball,b::Ball,forcea,forceb)
+
+Calculate all the collisions that the two accelerating balls may undertake and
+return the soonest collision time.
+
 #  >>> import sympy
 #  >>> x1, x2, v1, v2, a1, a2, t, r1, r2 = sympy.symbols('x1 x2 v1 v2 a1 a2 t r1 r2')
 #  >>> expr = ((x1 - x2) + (v1 - v2)*t + (a1 - a2)*t**2 /2)**2 - (r1 + r2)**2
 #  >>> sympy.Poly(expr, t).all_coeffs()
 #  [a1**2/4 - a1*a2/2 + a2**2/4, a1*v1 - a1*v2 - a2*v1 + a2*v2, a1*x1 - a1*x2 - a2*x1 + a2*x2 + v1**2 - 2*v1*v2 + v2**2, 2*v1*x1 - 2*v1*x2 - 2*v2*x1 + 2*v2*x2, -r1**2 - 2*r1*r2 - r2**2 + x1**2 - 2*x1*x2 + x2**2]
+...
+# Arguments
+- `a::Ball`: ball to collide
+- `b::Ball`: ball to collide
+- `forcea`: force on ball a
+- `forceb`: force on ball b
+...
+
+# Example
+```julia
+```
+"""
 function timeofcollision(a::Ball, b::Ball, forcea, forceb)
   x1, x2 = a.position, b.position
   v1, v2 = a.velocity, b.velocity
@@ -85,7 +107,11 @@ function timeofcollision(a::Ball, b::Ball, forcea, forceb)
             dot(a1, x1) - dot(a1, x2) - dot(a2, x1) + dot(a2, x2) + dot(v1, v1) - 2dot(v1, v2) + dot(v2, v2),
             2dot(v1, x1) - 2dot(v1, x2) - 2dot(v2, x1) + 2dot(v2, x2),
             -dot(r1, r1) - 2dot(r1, r2) - dot(r2, r2) + dot(x1, x1) - 2dot(x1, x2) + dot(x2, x2)]
+  # if a solution has an imaginary component then subtract in from the real part
+  coeffs .-= (abs.(imag.(coeffs)) .> 0) * Inf
+  # now only take the real solutions (bad solutions collided at infinity in the past)
   @show times_of_potential_collisions = sort(real.(roots(coeffs)))
+  # retrieve the soonest collision in the future
   index_of_earliest_collision_time = findfirst(x->x > 0, times_of_potential_collisions)
   if isnothing(index_of_earliest_collision_time)
     return Inf
@@ -99,7 +125,39 @@ struct Domain
   ymax::Float64
 end
 
+"""
+    timeofcollision(a::Ball,force,d::Domain)
+
+Calculate the time that the ball will collide with the domain
+
+...
+# Arguments
+- `a::Ball`: 
+- `force`:
+- `d::Domain`: 
+...
+
+# Example
+```julia
+```
+"""
 function timeofcollision(a::Ball, force, d::Domain)
+  # internal function because this hacks in putting solution to -Inf to concentrate on collision in the future
+  function solvequadratic(a, b, c)
+    # ax^2 + bx + c = 0
+    solutions = if iszero(a) 
+      (iszero(b) ? -Inf : -c / b) .* (1, 1)
+    else
+      sqrtarg = b^2 - 4a*c
+      if sqrtarg < 0
+        (-Inf, -Inf) # this is safe for the use case, but otherwise a silly thing to do
+      else
+        ((-b + sqrt(sqrtarg)) / 2a, (-b - sqrt(sqrtarg)) / 2a)
+      end
+    end
+    return solutions
+  end
+
   r1 = a.radius
   x1 = a.position
   v1 = a.velocity
