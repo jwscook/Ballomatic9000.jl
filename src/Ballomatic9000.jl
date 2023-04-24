@@ -80,11 +80,18 @@ end
 Calculate all the collisions that the two accelerating balls may undertake and
 return the soonest collision time.
 
-#  >>> import sympy
-#  >>> x1, x2, v1, v2, a1, a2, t, r1, r2 = sympy.symbols('x1 x2 v1 v2 a1 a2 t r1 r2')
-#  >>> expr = ((x1 - x2) + (v1 - v2)*t + (a1 - a2)*t**2 /2)**2 - (r1 + r2)**2
-#  >>> sympy.Poly(expr, t).all_coeffs()
-#  [a1**2/4 - a1*a2/2 + a2**2/4, a1*v1 - a1*v2 - a2*v1 + a2*v2, a1*x1 - a1*x2 - a2*x1 + a2*x2 + v1**2 - 2*v1*v2 + v2**2, 2*v1*x1 - 2*v1*x2 - 2*v2*x1 + 2*v2*x2, -r1**2 - 2*r1*r2 - r2**2 + x1**2 - 2*x1*x2 + x2**2]
+Position at time t for ball a, x1' = x1 + v1t + a1/2 * t^2
+Position at time t for ball b, x2' = x2 + v2t + a2/2 * t^2
+
+Difference in positions at time t, (x1' - x2') = (x1 - x2) + (v1 - v2)t + (a1 - a2)/2 * t^2
+Square of distance between balls at time t, (x1' - x2')^2 = ((x1 - x2) + (v1 - v2)t + (a1 - a2)/2 * t^2)^2
+At the time of collision that squared distance is (r1 + r2)^2 = (x1' - x2')^2
+
+  >>> import sympy
+  >>> x1, x2, v1, v2, a1, a2, t, r1, r2 = sympy.symbols('x1 x2 v1 v2 a1 a2 t r1 r2')
+  >>> expr = ((x1 - x2) + (v1 - v2)*t + (a1 - a2)*t**2 / 2)**2 - (r1 + r2)**2
+  >>> sympy.Poly(expr, t).all_coeffs()
+  [a1**2/4 - a1*a2/2 + a2**2/4, a1*v1 - a1*v2 - a2*v1 + a2*v2, a1*x1 - a1*x2 - a2*x1 + a2*x2 + v1**2 - 2*v1*v2 + v2**2, 2*v1*x1 - 2*v1*x2 - 2*v2*x1 + 2*v2*x2, -r1**2 - 2*r1*r2 - r2**2 + x1**2 - 2*x1*x2 + x2**2]
 ...
 # Arguments
 - `a::Ball`: ball to collide
@@ -108,10 +115,12 @@ function timeofcollision(a::Ball, b::Ball, forcea, forceb)
             2dot(v1, x1) - 2dot(v1, x2) - 2dot(v2, x1) + 2dot(v2, x2),
             -dot(r1, r1) - 2dot(r1, r2) - dot(r2, r2) + dot(x1, x1) - 2dot(x1, x2) + dot(x2, x2)]
   rts = roots(coeffs)
+  # TODO figure this out
+  rts .= 1 ./ rts # WTF?! Why the blazes should this be necessary?! :(
   # if a solution has an imaginary component then subtract in from the real part
-  rts.-= (abs.(imag.(rts)) .> 0) * Inf
+  rts .-= (abs.(imag.(rts)) .> 0) * Inf
   # now only take the real solutions (bad solutions collided at infinity in the past)
-  @show times_of_potential_collisions = sort(real.(rts))
+  times_of_potential_collisions = sort(real.(rts))
   # retrieve the soonest collision in the future
   index_of_earliest_collision_time = findfirst(x->x > 0, times_of_potential_collisions)
   if isnothing(index_of_earliest_collision_time)

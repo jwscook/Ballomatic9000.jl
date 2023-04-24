@@ -55,6 +55,12 @@ end
     # when radii touch after travelling 1 space unit each in 1 time unit
     #s = x + ut + 1/2 a t^2
     @test 1 ≈ Ballomatic9000.timeofcollision(a, b, 0, 0)
+    a = Ball([0.0, 0.0], [1.0, 0.0], 1.0, 1.0)
+    b = Ball([8.0, 0.0], [-1.0, 0.0], 1.0, 1.0)
+    @test 3 ≈ Ballomatic9000.timeofcollision(a, b, 0, 0)
+    a = Ball([0.0, 0.0], [2.0, 0.0], 1.0, 1.0)
+    b = Ball([8.0, 0.0], [-2.0, 0.0], 1.0, 1.0)
+    @test 1.5 ≈ Ballomatic9000.timeofcollision(a, b, 0, 0)
   end
 
 
