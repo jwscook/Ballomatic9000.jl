@@ -107,10 +107,11 @@ function timeofcollision(a::Ball, b::Ball, forcea, forceb)
             dot(a1, x1) - dot(a1, x2) - dot(a2, x1) + dot(a2, x2) + dot(v1, v1) - 2dot(v1, v2) + dot(v2, v2),
             2dot(v1, x1) - 2dot(v1, x2) - 2dot(v2, x1) + 2dot(v2, x2),
             -dot(r1, r1) - 2dot(r1, r2) - dot(r2, r2) + dot(x1, x1) - 2dot(x1, x2) + dot(x2, x2)]
+  rts = roots(coeffs)
   # if a solution has an imaginary component then subtract in from the real part
-  coeffs .-= (abs.(imag.(coeffs)) .> 0) * Inf
+  rts.-= (abs.(imag.(rts)) .> 0) * Inf
   # now only take the real solutions (bad solutions collided at infinity in the past)
-  @show times_of_potential_collisions = sort(real.(roots(coeffs)))
+  @show times_of_potential_collisions = sort(real.(rts))
   # retrieve the soonest collision in the future
   index_of_earliest_collision_time = findfirst(x->x > 0, times_of_potential_collisions)
   if isnothing(index_of_earliest_collision_time)
