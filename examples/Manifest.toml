@@ -13,9 +13,9 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 
 [[deps.Ballomatic9000]]
 deps = ["LinearAlgebra", "PolynomialRoots"]
-git-tree-sha1 = "89d8ece18ae833265497d3c3294769097ced1bc4"
+git-tree-sha1 = "641c3a6022ca56ad28229d0d2550b0ecc77480d4"
 repo-rev = "main"
-repo-url = "../.."
+repo-url = ".."
 uuid = "8ae2b186-85fc-4114-aafa-6bc09dc1aae7"
 version = "0.1.0"
 
