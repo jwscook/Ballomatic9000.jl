@@ -61,9 +61,26 @@ end
     a = Ball([0.0, 0.0], [2.0, 0.0], 1.0, 1.0)
     b = Ball([8.0, 0.0], [-2.0, 0.0], 1.0, 1.0)
     @test 1.5 ≈ Ballomatic9000.timeofcollision(a, b, 0, 0)
+    g = -GRAVITY[2]
+    a = Ball([0.0, -1.0], [0.0, 0.0], 1.0, 1.0) # top of ball at y=0
+    b = Ball([0.0, 5.0], [0.0, 0.0], 1.0, 1.0) # start above a and let fall
+    # set force on a to counteract gravity
+    @test sqrt(8 / g) ≈ Ballomatic9000.timeofcollision(a, b, [0, g], 0)
   end
 
+end
 
+
+@testset "Simulate!" begin
+  L = 100.0 # square domain
+  nballs = 10
+  domain = Domain(L, L)
+  balls = [Ball(rand(2) .* L, randn(2), 1.0, rand()) for _ in 1:nballs]
+  dt = 1 / 100 # 100 Hz
+  forces = [zeros(2) for _ in 1:nballs]
+  for i in 1:100 # timestep
+    simulate!(balls, forces, domain, dt)
+  end
 end
 
 end
