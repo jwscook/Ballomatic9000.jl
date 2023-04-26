@@ -218,14 +218,15 @@ Collide a ball with the wall of the Domain
 ```
 """
 function collide!(a::Ball, d::Domain, atol=sqrt(eps()), rtol=sqrt(eps()))
-  # so ugly!
-  if isapprox(a.position[1], 0.0 + a.radius, atol=atol, rtol=rtol)
+  # less ugly!
+  xlo = isapprox(a.position[1], 0.0 + a.radius, atol=atol, rtol=rtol)
+  xhi = isapprox(a.position[1], d.xmax - a.radius, atol=atol, rtol=rtol)
+  if xlo || xhi
     a.velocity[1] -= 2a.velocity[1]
-  elseif isapprox(a.position[1], d.xmax - a.radius, atol=atol, rtol=rtol)
-    a.velocity[1] -= 2a.velocity[1]
-  elseif isapprox(a.position[2], 0.0 + a.radius, atol=atol, rtol=rtol)
-    a.velocity[2] -= 2a.velocity[2]
-  elseif isapprox(a.position[2], d.ymax - a.radius, atol=atol, rtol=rtol)
+  end
+  ylo = isapprox(a.position[2], 0.0 + a.radius, atol=atol, rtol=rtol)
+  yhi = isapprox(a.position[2], d.ymax - a.radius, atol=atol, rtol=rtol)
+  if ylo || yhi
     a.velocity[2] -= 2a.velocity[2]
   end
 end
