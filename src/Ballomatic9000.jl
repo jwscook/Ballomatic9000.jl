@@ -220,13 +220,13 @@ Collide a ball with the wall of the Domain
 function collide!(a::Ball, d::Domain, atol=sqrt(eps()), rtol=sqrt(eps()))
   # so ugly!
   if isapprox(a.position[1], 0.0 + a.radius, atol=atol, rtol=rtol)
-    a.velocity[1] -= a.velocity[1]
+    a.velocity[1] -= 2a.velocity[1]
   elseif isapprox(a.position[1], d.xmax - a.radius, atol=atol, rtol=rtol)
-    a.velocity[1] -= a.velocity[1]
+    a.velocity[1] -= 2a.velocity[1]
   elseif isapprox(a.position[2], 0.0 + a.radius, atol=atol, rtol=rtol)
-    a.velocity[2] -= a.velocity[2]
+    a.velocity[2] -= 2a.velocity[2]
   elseif isapprox(a.position[2], d.ymax - a.radius, atol=atol, rtol=rtol)
-    a.velocity[2] -= a.velocity[2]
+    a.velocity[2] -= 2a.velocity[2]
   end
 end
 
