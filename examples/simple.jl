@@ -18,7 +18,8 @@ function run(;L = 100.0, nballs = 100, vth = 1.0)
   sizehint!(balls, nballs)
   for i in 1:nballs
     while true
-      ball = Ball(rand(2) .* L, vth*randn(2), radius=1.0, mass=rand())
+      r = 2 * rand()
+      ball = Ball(rand(2) .* (L - 2r) .+ r, vth*randn(2), radius=r, mass=r^2)
       overlaps = false
       for a in balls
         # access member variable = naughty
