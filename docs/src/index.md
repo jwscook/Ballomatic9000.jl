@@ -1,11 +1,11 @@
-# NelderMead.jl Documentation
+# Ballomatic9000.jl Documentation
 
 ```@meta
-CurrentModule = NelderMead
+CurrentModule = Ballomatic9000
 ```
 
 ```@autodocs
-Modules = [NelderMead]
+Modules = [Ballomatic9000]
 ```
 
 ## Index
